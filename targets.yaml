@@ -1,0 +1,27 @@
+# One entry per movie you want watched.
+#
+# Two detection modes:
+#
+# - mode: showtime_regex  (recommended for BookMyShow)
+#     `url` must be the movie's BUYTICKETS page for a specific date
+#     (language/format + date already selected) — not the movie landing
+#     page, whose "Book tickets" button is present whether or not booking
+#     is actually open. The buytickets page renders real showtime slots
+#     ("07:15 PM" etc.) as plain text once seats go on sale, and none
+#     beforehand — check.py detects "available" by finding that pattern.
+#     Get this URL by opening the movie on bookmyshow.com, clicking
+#     "Book tickets" -> pick a language/format -> the resulting URL is it.
+#
+# - marker mode (default, for other platforms)
+#     Use `open_marker` / `closed_marker` text found by hand on the page.
+
+- movie: "Toxic: A Fairy Tale for Grown-ups (Bengaluru, Hindi)"
+  url: "https://in.bookmyshow.com/movies/bengaluru/toxic-a-fairy-tale-for-grown-ups/buytickets/ET00379311/20260821?etCodes=ET00379311&language=hindi&refEventCode=ET00379311"
+  mode: "showtime_regex"
+  email: "likithraj8899@gmail.com"
+
+# - movie: "Another Movie"
+#   url: "https://in.bookmyshow.com/movies/bengaluru/another-movie/ET00000001"
+#   open_marker: "Book tickets"
+#   closed_marker: "Coming Soon"
+#   email: "you@example.com"

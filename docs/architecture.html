@@ -1,0 +1,680 @@
+<title>BookQuick Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f7f6f2;
+  --surface:#ffffff;
+  --surface-2:#efece4;
+  --border:#dcd6c8;
+  --text:#1c1a15;
+  --muted:#6b6455;
+  --accent:#b3401f;
+  --accent-ink:#ffffff;
+  --accent-soft:#f2e3da;
+  --queue:#2f6d5c;
+  --queue-soft:#e3ede9;
+  --code-bg:#1c1a15;
+  --code-text:#f0ece0;
+  --shadow: 0 1px 2px rgba(28,26,21,0.06), 0 8px 24px rgba(28,26,21,0.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14120f;
+    --surface:#1b1815;
+    --surface-2:#221e19;
+    --border:#3a352c;
+    --text:#ece7db;
+    --muted:#a89e8a;
+    --accent:#e07a4f;
+    --accent-ink:#1c1a15;
+    --accent-soft:#332821;
+    --queue:#6fbfa4;
+    --queue-soft:#1e2b26;
+    --code-bg:#0f0d0b;
+    --code-text:#eee8d8;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14120f;
+  --surface:#1b1815;
+  --surface-2:#221e19;
+  --border:#3a352c;
+  --text:#ece7db;
+  --muted:#a89e8a;
+  --accent:#e07a4f;
+  --accent-ink:#1c1a15;
+  --accent-soft:#332821;
+  --queue:#6fbfa4;
+  --queue-soft:#1e2b26;
+  --code-bg:#0f0d0b;
+  --code-text:#eee8d8;
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.35);
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  line-height:1.6;
+  margin:0;
+  padding:0;
+}
+.wrap{
+  display:grid;
+  grid-template-columns:230px minmax(0,780px);
+  gap:48px;
+  max-width:1080px;
+  margin:0 auto;
+  padding:56px 24px 120px;
+}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr; padding:32px 18px 80px;}
+  nav.toc{display:none;}
+}
+nav.toc{
+  position:sticky;
+  top:32px;
+  align-self:start;
+  font-size:0.82rem;
+}
+nav.toc .label{
+  font-family:"IBM Plex Mono",monospace;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  font-size:0.7rem;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+nav.toc ol{
+  list-style:none;
+  margin:0;
+  padding:0;
+  border-left:2px solid var(--border);
+}
+nav.toc li{margin:0;}
+nav.toc a{
+  display:block;
+  padding:7px 0 7px 14px;
+  color:var(--muted);
+  text-decoration:none;
+  border-left:2px solid transparent;
+  margin-left:-2px;
+}
+nav.toc a:hover{color:var(--text);}
+nav.toc a.current{color:var(--accent); border-left-color:var(--accent); font-weight:600;}
+
+header.masthead{
+  margin-bottom:8px;
+}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.75rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin:0 0 10px;
+}
+h1{
+  font-size:2.3rem;
+  line-height:1.12;
+  margin:0 0 14px;
+  text-wrap:balance;
+  letter-spacing:-0.01em;
+}
+.dek{
+  color:var(--muted);
+  font-size:1.05rem;
+  max-width:60ch;
+  margin:0 0 28px;
+}
+.verdict-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:4px solid var(--accent);
+  border-radius:6px;
+  padding:18px 20px;
+  box-shadow:var(--shadow);
+  margin-bottom:8px;
+}
+.verdict-box p{margin:0 0 8px;}
+.verdict-box p:last-child{margin-bottom:0;}
+.verdict-box .kicker{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  color:var(--accent);
+  margin-bottom:6px;
+  display:block;
+}
+
+section{margin-top:64px;}
+section:first-of-type{margin-top:44px;}
+
+.phase-head{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  margin-bottom:6px;
+}
+.phase-num{
+  font-family:"IBM Plex Mono",monospace;
+  color:var(--accent);
+  font-size:0.95rem;
+  font-weight:600;
+}
+h2{
+  font-size:1.5rem;
+  margin:0;
+  letter-spacing:-0.01em;
+  text-wrap:balance;
+}
+h3{
+  font-size:1.15rem;
+  margin:32px 0 10px;
+}
+h4{
+  font-size:0.95rem;
+  margin:22px 0 8px;
+  font-family:"IBM Plex Mono",monospace;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--muted);
+}
+p{margin:0 0 14px;}
+ul,ol{margin:0 0 16px; padding-left:22px;}
+li{margin-bottom:6px;}
+strong{font-weight:600;}
+a{color:var(--accent);}
+
+.diagram{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:20px;
+  margin:18px 0 24px;
+  box-shadow:var(--shadow);
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin:16px 0 24px;
+  font-size:0.88rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+}
+.table-wrap{overflow-x:auto; border-radius:8px; box-shadow:var(--shadow);}
+th,td{
+  text-align:left;
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  vertical-align:top;
+}
+th{
+  background:var(--surface-2);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  color:var(--muted);
+}
+tr:last-child td{border-bottom:none;}
+td.pick{background:var(--accent-soft); font-weight:600;}
+
+.badge{
+  display:inline-block;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.7rem;
+  padding:2px 8px;
+  border-radius:99px;
+  background:var(--queue-soft);
+  color:var(--queue);
+  font-weight:600;
+  letter-spacing:0.02em;
+}
+.badge.accent{background:var(--accent-soft); color:var(--accent);}
+
+pre{
+  background:var(--code-bg);
+  color:var(--code-text);
+  padding:16px 18px;
+  border-radius:8px;
+  overflow-x:auto;
+  font-size:0.82rem;
+  line-height:1.55;
+  margin:14px 0 22px;
+}
+code{
+  font-family:"IBM Plex Mono",monospace;
+}
+p code, li code, td code{
+  background:var(--surface-2);
+  padding:1px 6px;
+  border-radius:4px;
+  font-size:0.85em;
+  border:1px solid var(--border);
+}
+
+.milestone{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:18px 20px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.milestone h4{margin-top:0; color:var(--accent); font-family:"IBM Plex Mono",monospace;}
+.milestone .goal{color:var(--muted); font-size:0.9rem; margin-bottom:10px;}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:20px;
+}
+@media (max-width:640px){.grid-2{grid-template-columns:1fr;}}
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:16px 18px;
+  box-shadow:var(--shadow);
+}
+.card h4{margin-top:0;}
+
+hr.div{
+  border:none;
+  border-top:1px solid var(--border);
+  margin:56px 0;
+}
+footer{
+  margin-top:64px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+  font-size:0.85rem;
+}
+</style>
+
+<div class="wrap">
+<nav class="toc">
+  <div class="label">Contents</div>
+  <ol>
+    <li><a href="#verdict">Verdict</a></li>
+    <li><a href="#phase1">01 — Architecture &amp; Data Flow</a></li>
+    <li><a href="#phase2">02 — Tech Stack Evaluation</a></li>
+    <li><a href="#phase3">03 — System Design &amp; Schema</a></li>
+    <li><a href="#phase4">04 — Chrome Extension</a></li>
+    <li><a href="#phase5">05 — Implementation Roadmap</a></li>
+    <li><a href="#risks">06 — Ethical &amp; Legal Notes</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="masthead">
+  <p class="eyebrow">System Design — v1</p>
+  <h1>BookQuick: Real-Time Ticket-Drop Alerting</h1>
+  <p class="dek">A production architecture for detecting the instant movie ticket booking opens for a tracked show, and fanning that alert out to every watcher in under a second — from a Manifest V3 browser extension down to the polling engine underneath.</p>
+</header>
+
+<div class="verdict-box" id="verdict">
+  <span class="kicker">Recommendation, up front</span>
+  <p><strong>Build it as a queue-driven dynamic polling engine, not a scraper farm.</strong> The two problems that will actually break this system are (1) MV3 killing your extension's background context every 30 seconds, and (2) needing to notify thousands of watchers of one screening without a synchronous loop stalling the detector. Both are solved by the same move: decouple <em>detection</em> from <em>delivery</em> with a message broker, and let the extension be a thin, stateless client of a push channel instead of a thing that "runs" anything.</p>
+  <p>Start with plain HTTP polling against the booking site's own JSON endpoints (every major platform's web app calls one). Reserve headless-browser clusters and residential proxies for the specific targets that actively block that — don't build that complexity for platforms that don't need it.</p>
+</div>
+
+<section id="phase1">
+  <div class="phase-head"><span class="phase-num">01</span><h2>Architecture &amp; Data Flow</h2></div>
+  <p>Five stages, each independently scalable, connected by two queues (one for polling jobs, one for outbound alerts). Nothing talks to the extension directly except the push gateway.</p>
+
+  <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  subgraph target["Target Platform"]
+    T1[Booking status endpoint]
+  end
+
+  subgraph ingest["Ingestion Layer"]
+    SCH[Scheduler<br/>dynamic interval] --> PQ[(Poll Queue<br/>Redis / SQS)]
+    PQ --> W1[Poll Worker]
+    PQ --> W2[Poll Worker]
+    PQ --> W3[Poll Worker N]
+  end
+
+  subgraph diff["Diff &amp; State"]
+    CACHE[(Redis<br/>last known status)]
+    DB[(Postgres<br/>targets + watchers)]
+  end
+
+  subgraph fanout["Alert Fanout"]
+    AQ[(Alert Queue<br/>Kafka / SQS)]
+    N1[Notify Worker]
+    N2[Notify Worker]
+  end
+
+  subgraph delivery["Delivery Channels"]
+    PUSH[Web Push Service]
+    TG[Telegram Bot API]
+    WA[WhatsApp / Webhook]
+  end
+
+  EXT[Chrome / Firefox Extension]
+
+  T1 -->|HTTP GET, jittered| W1
+  T1 -->|HTTP GET, jittered| W2
+  T1 -->|HTTP GET, jittered| W3
+  W1 --> CACHE
+  W2 --> CACHE
+  W3 --> CACHE
+  CACHE -->|status changed?| DB
+  DB -->|yes: enqueue affected watchers| AQ
+  AQ --> N1
+  AQ --> N2
+  N1 --> PUSH
+  N1 --> TG
+  N2 --> WA
+  PUSH -->|Push API| EXT
+  SCH -.reads target list &amp; priority.-> DB
+</pre>
+  </div>
+
+  <h3>Life of one alert</h3>
+  <ol>
+    <li><strong>Subscribe.</strong> User configures a watch in the extension popup (movie, cinema, format, date window, channel). This writes one row to <code>watchers</code> and, if new, a row to <code>targets</code> — extension never polls anything itself.</li>
+    <li><strong>Schedule.</strong> The scheduler ranks <code>targets</code> by proximity to expected release (see §3, dynamic interval) and drips job messages into the poll queue.</li>
+    <li><strong>Poll.</strong> A stateless poll worker pulls a job, makes one HTTP request (or headless-browser fetch for hardened targets), and writes the parsed status into a Redis key keyed by target ID.</li>
+    <li><strong>Diff.</strong> The worker compares the new status against the previous cached value. No change → done, job discarded in &lt;50ms. Change from <code>coming_soon</code> → <code>available</code> → this is the trigger.</li>
+    <li><strong>Fan out.</strong> The worker does <em>not</em> loop over watchers itself. It publishes one <code>TargetOpened</code> event to the alert queue and returns immediately, keeping the detector hot for the next poll.</li>
+    <li><strong>Dispatch.</strong> A pool of notify workers consumes that event, pages through the watcher list for that target (batches of ~500), and pushes to each user's chosen channel in parallel. This is horizontally scalable independent of the poll workers.</li>
+    <li><strong>Deliver.</strong> Web Push hits the browser's push service (Chrome/Firefox relay this even if the extension's service worker is asleep — the OS wakes it). Telegram/WhatsApp/webhook calls go direct to those APIs. Every attempt is written to <code>notification_log</code> for auditability and retry.</li>
+  </ol>
+  <p>Target end-to-end latency (status flip → notification received): <strong>under 1–2 seconds</strong> for Web Push and Telegram; webhook/WhatsApp add whatever the receiving system takes.</p>
+</section>
+
+<section id="phase2">
+  <div class="phase-head"><span class="phase-num">02</span><h2>Tech Stack Evaluation</h2></div>
+  <p>Three real candidates, evaluated on the axes that actually matter here: detection latency, how much day-to-day toil the on-call engineer eats, and what it costs at 100 tracked shows versus 10,000.</p>
+
+  <h3>Option A — Node/TypeScript everywhere</h3>
+  <p><span class="badge accent">Recommended</span> BullMQ (Redis-backed queues) for both poll scheduling and alert fanout, Fastify for the API, Postgres for durable state, Redis doubling as cache + queue broker, Playwright for the hardened-target subset. Extension in TypeScript with a shared types package against the backend.</p>
+
+  <h3>Option B — Python/Celery</h3>
+  <p>Django or FastAPI, Celery + Redis/RabbitMQ for task scheduling, Postgres, Playwright (Python) for headless targets. Attractive if the team already leans Python for scraping/data work; Celery's periodic task + retry ergonomics are mature.</p>
+
+  <h3>Option C — Go + Kafka</h3>
+  <p>Go services for poll and notify workers, Kafka as the backbone (poll jobs and alert events as topics), Postgres, Chromedp for headless fetches. The right call only once you're firmly past 10k concurrent targets and Kafka's operational cost is justified by raw throughput and replay needs.</p>
+
+  <h4>Trade-off matrix</h4>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Dimension</th><th>A — Node + BullMQ</th><th>B — Python + Celery</th><th>C — Go + Kafka</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Detection→dispatch latency</td>
+        <td class="pick">Low — single-digit ms queue hop, one language across poll/notify/API</td>
+        <td>Low–medium — Celery scheduling jitter under load is a known rough edge</td>
+        <td>Lowest at scale, but Kafka consumer-group rebalance adds latency spikes at small scale</td>
+      </tr>
+      <tr>
+        <td>Dev velocity / maintainability</td>
+        <td class="pick">High — one language for extension, API, and workers; small team can own it all</td>
+        <td>High if the team already knows Python; two-language split (JS extension / Python backend) adds a seam</td>
+        <td>Lower — Go's verbosity + Kafka's operational surface slow early iteration</td>
+      </tr>
+      <tr>
+        <td>Headless-browser tooling</td>
+        <td class="pick">Playwright is first-class in Node</td>
+        <td>Playwright-Python is solid, slightly behind in ecosystem</td>
+        <td>Chromedp works but is noticeably more code per scraper</td>
+      </tr>
+      <tr>
+        <td>Infra cost @ 100 targets</td>
+        <td class="pick">~$40–80/mo (1 small Redis, 1 small Postgres, 1–2 worker containers)</td>
+        <td>~$40–80/mo, same shape</td>
+        <td>~$150+/mo — Kafka cluster (even managed) has a real floor</td>
+      </tr>
+      <tr>
+        <td>Infra cost @ 10,000 targets</td>
+        <td>~$600–900/mo — Redis Cluster + more workers, still queue-broker-bound</td>
+        <td>~$600–900/mo, similar</td>
+        <td class="pick">Best $/throughput at this scale — Kafka partitioning pays for itself</td>
+      </tr>
+      <tr>
+        <td>Operational risk</td>
+        <td class="pick">Redis as broker is simple to reason about and monitor</td>
+        <td>Celery + broker misconfig (visibility timeouts, lost tasks) is a classic footgun</td>
+        <td>Kafka needs a dedicated owner; overkill risk for a team of 1–3</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Verdict</h3>
+  <p><strong>Option A (Node/TypeScript + BullMQ + Postgres + Redis + Playwright)</strong> for build and first 12–18 months of scale. It minimizes the number of languages a small team maintains (extension, API, and workers all TypeScript — you can literally share the <code>Target</code>/<code>Watcher</code> types between backend and extension), BullMQ gives you delayed jobs, priority, rate limiting, and retries out of the box (exactly what dynamic polling needs), and Redis is one piece of infra that's both your cache and your broker. Re-evaluate Kafka only if a single target genuinely needs &gt;10k watchers or you're tracking &gt;10k shows concurrently — BullMQ/Redis will comfortably carry you well past your MVP and most production scale.</p>
+</section>
+
+<section id="phase3">
+  <div class="phase-head"><span class="phase-num">03</span><h2>System Design &amp; Schema Deep Dive</h2></div>
+
+  <h3>Database schema (Postgres)</h3>
+  <pre><code>-- One row per trackable release (a movie, broadly)
+CREATE TABLE movies (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title         TEXT NOT NULL,
+  release_date  DATE,
+  external_ids  JSONB,               -- {"bms": "ET00312345", "district": "..."}
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE cinemas (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  platform      TEXT NOT NULL,       -- 'bms' | 'district' | 'ticketmaster'
+  name          TEXT NOT NULL,
+  city          TEXT NOT NULL,
+  external_id   TEXT NOT NULL,       -- platform's own venue ID
+  UNIQUE (platform, external_id)
+);
+
+-- A specific (movie, cinema) pairing being polled — the actual "target"
+CREATE TABLE targets (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  movie_id         UUID REFERENCES movies(id),
+  cinema_id        UUID REFERENCES cinemas(id),
+  format           TEXT,             -- 'IMAX' | '2D' | '3D' | '4DX' | NULL = any
+  date_window_start DATE,
+  date_window_end   DATE,
+  status           TEXT NOT NULL DEFAULT 'coming_soon', -- coming_soon | available | sold_out | closed
+  poll_priority    SMALLINT NOT NULL DEFAULT 3,          -- 1 = hot (poll every few sec), 5 = cold (hourly)
+  last_polled_at   TIMESTAMPTZ,
+  last_changed_at  TIMESTAMPTZ,
+  UNIQUE (movie_id, cinema_id, format, date_window_start)
+);
+CREATE INDEX ON targets (status, poll_priority);
+
+CREATE TABLE users (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email        TEXT UNIQUE,
+  created_at   TIMESTAMPTZ DEFAULT now()
+);
+
+-- One row per user-configured watch
+CREATE TABLE watchers (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID REFERENCES users(id) ON DELETE CASCADE,
+  target_id    UUID REFERENCES targets(id) ON DELETE CASCADE,
+  channels     JSONB NOT NULL,        -- ["web_push", "telegram"]
+  telegram_chat_id TEXT,
+  webhook_url  TEXT,
+  active       BOOLEAN NOT NULL DEFAULT true,
+  created_at   TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (user_id, target_id)
+);
+CREATE INDEX ON watchers (target_id) WHERE active;
+
+CREATE TABLE notification_log (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  watcher_id   UUID REFERENCES watchers(id),
+  channel      TEXT NOT NULL,
+  status       TEXT NOT NULL,         -- queued | sent | failed
+  attempted_at TIMESTAMPTZ DEFAULT now(),
+  error        TEXT
+);
+CREATE INDEX ON notification_log (watcher_id, attempted_at DESC);</code></pre>
+
+  <h3>Poll worker: scheduling, dedup, backoff</h3>
+  <div class="grid-2">
+    <div class="card">
+      <h4>Dynamic interval, not fixed cron</h4>
+      <p>Priority is a function of days-to-release: 7+ days out → poll every 30–60 min; 1–2 days out → every 2–5 min; inside the announced booking window → every 3–10 sec with jitter. Recompute <code>poll_priority</code> nightly from <code>movies.release_date</code>, and let the scheduler enqueue high-priority targets more frequently rather than running every target on one global cron tick.</p>
+    </div>
+    <div class="card">
+      <h4>Dedup via job idempotency key</h4>
+      <p>Poll jobs use <code>target_id + minute-bucket</code> as a BullMQ job ID. If a job with that ID is already queued or in-flight, the enqueue is a silent no-op — this is what prevents duplicate requests when a target's priority changes mid-cycle or a worker retries.</p>
+    </div>
+    <div class="card">
+      <h4>Exponential backoff on failure</h4>
+      <p>HTTP 429/503 or a timeout bumps that target's next-poll delay by <code>base * 2^attempt</code> (cap ~5 min), and increments a per-target <code>fail_count</code>. Three consecutive platform-level failures across <em>different</em> targets on the same platform trips a circuit breaker that pauses all polling for that platform for a cooldown window — this is what keeps one angry WAF from cascading into a ban of your whole IP pool.</p>
+    </div>
+    <div class="card">
+      <h4>Diff engine</h4>
+      <p>Redis <code>SETNX</code>-style compare: <code>GET status:{target_id}</code>, compare to freshly parsed value, and only if different do you <code>SET</code> the new value <em>and</em> publish to the alert queue — a single Lua script (via <code>EVAL</code>) makes this atomic and sub-millisecond.</p>
+    </div>
+  </div>
+
+  <h3>Rate limiting &amp; proxy strategy</h3>
+  <ul>
+    <li><strong>Prefer the platform's own JSON endpoints</strong> that their web/mobile app already calls (found via browser devtools network tab) over scraping rendered HTML — lighter weight, less likely to trip bot heuristics, and it's the same data a real user's browser requests.</li>
+    <li><strong>Per-platform token bucket</strong> shared across all workers polling that platform (Redis-backed), e.g. cap at N requests/sec platform-wide regardless of how many targets you're tracking there — this is what "not getting IP-banned" actually comes down to.</li>
+    <li><strong>Jitter every request</strong> (±20–30% of interval) so thousands of your polls don't land in synchronized bursts that look like a DDoS pattern.</li>
+    <li><strong>Reserve headless-browser + residential proxy rotation</strong> for the specific platforms whose JSON endpoints are behind a WAF challenge (Cloudflare, PerimeterX, etc.) — this is meaningfully more expensive per-check, so gate it target-by-target, not globally.</li>
+    <li><strong>Respect robots.txt and rate-limit headers</strong> (<code>Retry-After</code>) where present; back off on a 429 rather than rotating past it — treat rate limits as a real constraint, not an obstacle to route around.</li>
+  </ul>
+</section>
+
+<section id="phase4">
+  <div class="phase-head"><span class="phase-num">04</span><h2>Chrome Extension Architecture</h2></div>
+
+  <h3>Manifest V3 structure</h3>
+  <pre><code>manifest.json
+├── background: { service_worker: "background.js", type: "module" }
+├── content_scripts: [{ matches: ["*://in.bookmyshow.com/*", ...], js: ["content.js"] }]
+├── action: { default_popup: "popup.html" }
+├── permissions: ["storage", "notifications", "alarms"]
+├── host_permissions: ["https://api.bookquick.app/*"]
+└── options_page: "options.html"</code></pre>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>content.js</h4>
+      <p>Injected on booking-site pages. Reads the movie/cinema/showtime the user is currently viewing from the page DOM, and renders a <strong>"Watch for Booking"</strong> button overlay next to the native "Book Now" — this is the zero-friction entry point; the user never has to manually type a movie name.</p>
+    </div>
+    <div class="card">
+      <h4>popup.html + popup.js</h4>
+      <p>The dashboard: lists active watches, lets the user add one manually (for cinemas without a content-script integration yet), pick format/date window, and choose channels. Reads/writes via the background service worker's messaging API — never talks to the backend directly.</p>
+    </div>
+    <div class="card">
+      <h4>background.js (service worker)</h4>
+      <p>Deliberately kept thin. Its only jobs: relay messages between content script/popup and the backend API, register the Web Push subscription once, and handle <code>chrome.notifications</code> display when a push arrives. It does <strong>not</strong> poll anything or hold long-lived state — MV3 kills it after ~30s idle, so anything stateful lives in <code>chrome.storage.local</code> or the backend.</p>
+    </div>
+    <div class="card">
+      <h4>options.html</h4>
+      <p>Account linking (magic-link email → JWT stored in <code>chrome.storage.local</code>) and default preferences (default channel, default format).</p>
+    </div>
+  </div>
+
+  <h3>Solving the 30-second death: push, not polling</h3>
+  <p>This is the core MV3 constraint the brief calls out, and the fix is architectural, not clever code: <strong>the extension never keeps a connection open waiting for alerts.</strong> Instead:</p>
+  <ol>
+    <li>On install/login, the service worker calls the <strong>Web Push API</strong> (<code>PushManager.subscribe()</code>) to get a browser-managed push subscription (endpoint + keys), and sends that subscription to the backend, stored on the <code>watchers</code> row or a separate <code>push_subscriptions</code> table.</li>
+    <li>The backend's notify worker sends to that endpoint using the <code>web-push</code> library (VAPID-signed) when a target opens.</li>
+    <li>Chrome/Firefox's own push service wakes the service worker <em>even if it's been terminated</em> — this is the entire point of Web Push: delivery is the browser vendor's problem, not yours. The worker's <code>push</code> event listener fires, and it calls <code>chrome.notifications.create()</code> to show the OS-level notification.</li>
+  </ol>
+  <p>SSE or a raw WebSocket would require the service worker to hold a live connection, which MV3 will kill — those only make sense for a companion web-app tab that's actually open and focused, as a secondary channel. Web Push is the primary channel because it survives the worker being asleep.</p>
+
+  <h3>Extension ↔ backend protocol</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Call</th><th>Direction</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>POST /auth/magic-link</code></td><td>ext → api</td><td>Passwordless login; returns short-lived JWT</td></tr>
+      <tr><td><code>POST /watchers</code></td><td>ext → api</td><td>Create a watch (movie, cinema, format, window, channels)</td></tr>
+      <tr><td><code>GET /watchers</code></td><td>ext → api</td><td>Populate popup dashboard list</td></tr>
+      <tr><td><code>DELETE /watchers/:id</code></td><td>ext → api</td><td>Stop watching</td></tr>
+      <tr><td><code>POST /push/subscribe</code></td><td>ext → api</td><td>Register the browser's PushManager subscription</td></tr>
+      <tr><td>Web Push payload</td><td>api → browser push service → ext</td><td>Delivers <code>{targetId, movie, cinema, deepLink}</code> to the service worker's <code>push</code> listener</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="phase5">
+  <div class="phase-head"><span class="phase-num">05</span><h2>Implementation Roadmap</h2></div>
+
+  <div class="milestone">
+    <h4>Milestone 1 — MVP</h4>
+    <p class="goal">Prove the core loop end-to-end for one platform, one region, manual target entry.</p>
+    <ul>
+      <li>Postgres schema + Fastify API (auth, watchers CRUD)</li>
+      <li>Fixed-interval poll worker for a single platform's JSON endpoint, BullMQ + Redis</li>
+      <li>Diff engine + alert queue + one notify worker (Telegram only — fastest to stand up, no push-key infra needed)</li>
+      <li>No extension yet — targets added via a simple internal form</li>
+    </ul>
+  </div>
+  <div class="milestone">
+    <h4>Milestone 2 — Robust Polling</h4>
+    <p class="goal">Make the polling engine survive contact with real anti-bot defenses and scale past a handful of targets.</p>
+    <ul>
+      <li>Dynamic priority scheduling by days-to-release</li>
+      <li>Per-platform token-bucket rate limiting + jitter</li>
+      <li>Exponential backoff + circuit breaker per platform</li>
+      <li>Playwright-based fallback poller for WAF-protected targets</li>
+      <li>Multi-platform support (BookMyShow, District, Ticketmaster adapters behind a common interface)</li>
+    </ul>
+  </div>
+  <div class="milestone">
+    <h4>Milestone 3 — Extension UI</h4>
+    <p class="goal">Zero-friction configuration, real push delivery.</p>
+    <ul>
+      <li>Manifest V3 extension: content script overlay button + popup dashboard</li>
+      <li>Web Push subscription flow + VAPID keys on the backend</li>
+      <li>Magic-link auth, <code>chrome.storage.local</code> session</li>
+      <li>Web Push and Telegram both live as channel options</li>
+    </ul>
+  </div>
+  <div class="milestone">
+    <h4>Milestone 4 — Scale &amp; Edge Cases</h4>
+    <p class="goal">Handle the 5,000-watchers-on-one-IMAX-screening case and the failure modes around it.</p>
+    <ul>
+      <li>Batched fan-out in the notify worker (paginate watchers, parallelize with a concurrency cap, not one request at a time)</li>
+      <li>WhatsApp Business API + generic webhook channels</li>
+      <li>Notification log + retry/dead-letter queue for failed sends</li>
+      <li>Dedup guard: if a target flips available → sold_out → available again within minutes, don't double-alert the same watcher</li>
+      <li>Firefox port (WebExtensions API is largely MV3-compatible now)</li>
+      <li>Observability: queue depth, poll success rate, and alert latency dashboards — these are your early-warning signs of a platform tightening its bot defenses</li>
+    </ul>
+  </div>
+</section>
+
+<section id="risks">
+  <div class="phase-head"><span class="phase-num">06</span><h2>Ethical &amp; Legal Notes</h2></div>
+  <p>Worth deciding deliberately before building, not after a cease-and-desist:</p>
+  <ul>
+    <li><strong>Prefer official or public endpoints over anything requiring credential theft, CAPTCHA-solving, or auth bypass</strong> — the endpoints this design targets are the same ones a logged-out browser already calls to render the page; that's a materially different posture than reverse-engineering an authenticated app API.</li>
+    <li><strong>Check each platform's Terms of Service</strong> before adding it as a target. Some booking platforms explicitly prohibit automated access; others (many regional cinema chains) have no such clause. Where a platform offers a partner/affiliate API, use it instead of scraping — it's more stable for you too.</li>
+    <li><strong>This system reads public availability status; it does not purchase, reserve, or hold seats.</strong> Keep it that way — an alerting tool is defensible in a way a bot that auto-checks-out tickets faster than a human is not, and mixing the two changes both the legal exposure and the fairness story.</li>
+    <li><strong>Rate-limit yourself more conservatively than you technically have to.</strong> Being a good citizen of someone else's infrastructure is also just good survival strategy for the product's own uptime.</li>
+  </ul>
+</section>
+
+<footer>
+  BookQuick — architecture v1 · drafted 2026-08-21
+</footer>
+</main>
+</div>
