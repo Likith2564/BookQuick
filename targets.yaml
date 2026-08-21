@@ -15,8 +15,8 @@
 # - marker mode (default, for other platforms)
 #     Use `open_marker` / `closed_marker` text found by hand on the page.
 
-- movie: "Toxic: A Fairy Tale for Grown-ups (Bengaluru, Hindi)"
-  url: "https://in.bookmyshow.com/movies/bengaluru/toxic-a-fairy-tale-for-grown-ups/buytickets/ET00379311/20260821?etCodes=ET00379311&language=hindi&refEventCode=ET00379311"
+- movie: "Toxic: A Fairy Tale for Grown-ups (Bengaluru, Hindi, 26 Aug)"
+  url: "https://in.bookmyshow.com/movies/bengaluru/toxic-a-fairy-tale-for-grown-ups/buytickets/ET00379311/20260826?etCodes=ET00379311&language=hindi&refEventCode=ET00379311"
   mode: "showtime_regex"
   email: "likithraj8899@gmail.com"
 
