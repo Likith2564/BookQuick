@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AddWatcherForm } from "./AddWatcherForm";
@@ -41,9 +42,17 @@ export default async function DashboardPage() {
         </form>
       </div>
 
-      <h2 className="mb-3 text-sm font-medium text-neutral-600">
-        Your watches
-      </h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-medium text-neutral-600">
+          Your watches
+        </h2>
+        <Link
+          href="/discover"
+          className="text-sm font-medium text-neutral-900 underline"
+        >
+          Discover upcoming movies →
+        </Link>
+      </div>
       <ul className="mb-8 flex flex-col gap-2">
         {watchers?.length ? (
           watchers.map((w) => (
