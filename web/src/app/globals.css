@@ -12,12 +12,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Deliberately light-only: every page is styled with light-background
+   Tailwind neutrals (text-neutral-900 etc). Following the OS dark-mode
+   preference without also dark-mode-styling every component makes text
+   unreadable (near-black text on a near-black background), so this
+   stays fixed instead of half-supporting both. */
 
 body {
   background: var(--background);
