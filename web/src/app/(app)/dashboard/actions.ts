@@ -50,9 +50,3 @@ export async function deleteWatcher(formData: FormData) {
 
   revalidatePath("/dashboard");
 }
-
-export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/login");
-}

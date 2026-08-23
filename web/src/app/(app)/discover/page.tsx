@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { addFromDiscovery } from "./actions";
@@ -34,38 +33,30 @@ export default async function DiscoverPage({
     .order("release_date", { ascending: true });
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl tracking-wide text-accent">
-            DISCOVER
-          </h1>
-          <p className="text-sm text-muted">
-            Upcoming releases that haven&apos;t opened booking yet — one
-            click to watch.
-          </p>
-        </div>
-        <Link
-          href="/dashboard"
-          className="shrink-0 text-sm text-muted underline hover:text-text"
-        >
-          Back to watches
-        </Link>
+    <main className="mx-auto w-full max-w-5xl px-6 py-8">
+      <div className="mb-6">
+        <h1 className="font-display text-4xl tracking-wide text-accent">
+          DISCOVER
+        </h1>
+        <p className="text-sm text-muted">
+          Upcoming releases that haven&apos;t opened booking yet — one click
+          to watch.
+        </p>
       </div>
 
       <div className="mb-8 flex flex-wrap gap-2">
         {CITIES.map((c) => (
-          <Link
+          <a
             key={c.slug}
             href={`/discover?city=${c.slug}`}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               c.slug === city
                 ? "bg-accent text-accent-ink"
-                : "bg-surface-2 text-muted hover:text-text"
+                : "glass-input text-muted hover:text-text"
             }`}
           >
             {c.label}
-          </Link>
+          </a>
         ))}
       </div>
 
@@ -74,9 +65,9 @@ export default async function DiscoverPage({
           {movies.map((m) => (
             <div
               key={m.id}
-              className="group relative overflow-hidden rounded-xl border border-border bg-surface"
+              className="glass group relative overflow-hidden rounded-xl"
             >
-              <div className="aspect-2/3 w-full bg-surface-2">
+              <div className="aspect-2/3 w-full bg-black/20">
                 {m.poster_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -126,7 +117,7 @@ export default async function DiscoverPage({
           ))}
         </div>
       ) : (
-        <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted">
+        <p className="glass rounded-xl p-4 text-sm text-muted">
           No upcoming movies loaded for this city yet — discover.py refreshes
           this list daily.
         </p>

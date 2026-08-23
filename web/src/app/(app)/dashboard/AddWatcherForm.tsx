@@ -3,6 +3,9 @@
 import { useRef, useState } from "react";
 import { addWatcher } from "./actions";
 
+const INPUT_CLASS =
+  "glass-input w-full rounded-lg px-3 py-2.5 text-sm text-text placeholder:text-muted";
+
 export function AddWatcherForm() {
   const [mode, setMode] = useState<"showtime_regex" | "marker">(
     "showtime_regex",
@@ -17,7 +20,7 @@ export function AddWatcherForm() {
         formRef.current?.reset();
         setMode("showtime_regex");
       }}
-      className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5"
+      className="glass flex flex-col gap-4 rounded-xl p-5"
     >
       <div>
         <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
@@ -27,7 +30,7 @@ export function AddWatcherForm() {
           name="movie"
           required
           placeholder="Toxic: A Fairy Tale for Grown-ups (Bengaluru, Hindi)"
-          className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+          className={INPUT_CLASS}
         />
       </div>
 
@@ -39,7 +42,7 @@ export function AddWatcherForm() {
           name="url"
           required
           placeholder="https://in.bookmyshow.com/movies/.../buytickets/..."
-          className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+          className={INPUT_CLASS}
         />
       </div>
 
@@ -55,7 +58,7 @@ export function AddWatcherForm() {
             className={`rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
               mode === "showtime_regex"
                 ? "border-accent bg-accent/10 text-text"
-                : "border-border bg-surface-2 text-muted hover:text-text"
+                : "glass-input text-muted hover:text-text"
             }`}
           >
             Showtime detection
@@ -69,7 +72,7 @@ export function AddWatcherForm() {
             className={`rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
               mode === "marker"
                 ? "border-accent bg-accent/10 text-text"
-                : "border-border bg-surface-2 text-muted hover:text-text"
+                : "glass-input text-muted hover:text-text"
             }`}
           >
             Text marker
@@ -79,12 +82,11 @@ export function AddWatcherForm() {
       </div>
 
       {mode === "showtime_regex" && (
-        <div className="rounded-lg border border-border bg-surface-2 p-3">
+        <div className="rounded-lg border border-glass-border bg-black/10 p-3">
           <p className="mb-3 text-xs text-muted">
-            Leave both blank to get alerted the moment{" "}
-            <em>any</em> cinema in the URL above opens booking. Fill either
-            in to narrow it down — type the name exactly as BookMyShow
-            shows it.
+            Leave both blank to get alerted the moment <em>any</em> cinema in
+            the URL above opens booking. Fill either in to narrow it down —
+            type the name exactly as BookMyShow shows it.
           </p>
           <div className="mb-3">
             <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
@@ -93,7 +95,7 @@ export function AddWatcherForm() {
             <input
               name="cinema_name"
               placeholder="PVR: Nexus (Formerly Forum), Koramangala"
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
@@ -103,7 +105,7 @@ export function AddWatcherForm() {
             <input
               name="format"
               placeholder="IMAX 2D, 4DX, DOLBY..."
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+              className={INPUT_CLASS}
             />
           </div>
         </div>
@@ -118,7 +120,7 @@ export function AddWatcherForm() {
             <input
               name="open_marker"
               placeholder="Book tickets"
-              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+              className={INPUT_CLASS}
             />
           </div>
           <div>
@@ -128,7 +130,7 @@ export function AddWatcherForm() {
             <input
               name="closed_marker"
               placeholder="Coming Soon"
-              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+              className={INPUT_CLASS}
             />
           </div>
         </>

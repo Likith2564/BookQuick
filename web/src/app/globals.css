@@ -2,25 +2,24 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #18161a;
-  --surface: #201e23;
-  --surface-2: #29262c;
-  --border: #38343c;
-  --text: #f4f1ec;
-  --muted: #a39da8;
-  --accent: #e8b23a;
+  --bg: #14111c;
+  --text: #f3efe9;
+  --muted: #b2a8bd;
+  --accent: #e8b04a;
   --accent-ink: #201704;
-  --danger: #e2685a;
-  --success: #7cc48f;
-  --success-bg: #22301f;
-  --neutral-chip: #38343c;
+  --danger: #e88579;
+  --success: #8ed4a0;
+  --success-bg: rgba(142, 212, 160, 0.14);
+  --neutral-chip: rgba(255, 255, 255, 0.1);
+
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-strong: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-blur: 20px;
 }
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-border: var(--border);
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -29,14 +28,74 @@
   --color-success: var(--success);
   --color-success-bg: var(--success-bg);
   --color-neutral-chip: var(--neutral-chip);
+  --color-glass-border: var(--glass-border);
   --font-display: "Bebas Neue", system-ui, sans-serif;
   --font-sans: "Work Sans", system-ui, sans-serif;
 }
+
+/* Deliberately light-mode-agnostic: the whole app pins to one dark,
+   glassmorphic identity rather than following the OS preference — a past
+   bug here made light-styled text vanish on a dark background, so the
+   theme is fixed rather than half-following prefers-color-scheme. */
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
+  min-height: 100%;
+}
+
+/* Fixed, layered backdrop so glass panels have something to blur — plain
+   flat color reads as "dark UI", not "glass". */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      780px circle at 12% -10%,
+      rgba(232, 176, 74, 0.24),
+      transparent 60%
+    ),
+    radial-gradient(
+      680px circle at 90% 10%,
+      rgba(122, 108, 224, 0.28),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px circle at 50% 110%,
+      rgba(214, 84, 120, 0.18),
+      transparent 60%
+    ),
+    var(--bg);
+}
+
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+}
+
+/* Inputs need denser backing than a decorative panel, for text legibility
+   at any point over the backdrop gradient. */
+.glass-input {
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--glass-border);
+}
+.glass-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 ::selection {
