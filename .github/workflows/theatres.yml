@@ -1,0 +1,26 @@
+name: Fetch theatre availability
+
+on:
+  schedule:
+    # Pricing/format availability shifts more than the daily discovery
+    # data, but doesn't need the 5-minute granularity check.yml uses for
+    # booking-open detection.
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  theatres:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - run: python theatres.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

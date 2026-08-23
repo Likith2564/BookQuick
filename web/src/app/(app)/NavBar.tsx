@@ -8,7 +8,6 @@ const LINKS = [
   { href: "/dashboard", label: "Watches" },
   { href: "/discover", label: "Discover" },
   { href: "/now-showing", label: "Now Showing" },
-  { href: "/theatres", label: "Theatre Finder", soon: true },
 ];
 
 export function NavBar({ email }: { email: string }) {
@@ -25,16 +24,10 @@ export function NavBar({ email }: { email: string }) {
 
       <nav className="hidden items-center gap-1 sm:flex">
         {LINKS.map((link) => {
-          const active = pathname === link.href;
-          return link.soon ? (
-            <span
-              key={link.href}
-              className="cursor-default rounded-full px-3 py-1.5 text-sm text-muted/50"
-              title="Coming soon"
-            >
-              {link.label}
-            </span>
-          ) : (
+          const active =
+            pathname === link.href ||
+            (link.href === "/now-showing" && pathname.startsWith("/theatres"));
+          return (
             <Link
               key={link.href}
               href={link.href}

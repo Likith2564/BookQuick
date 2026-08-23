@@ -45,6 +45,7 @@ def main() -> None:
 
     for city in CITIES:
         movies = bmscraper.fetch_movie_list(
+            city,
             f"https://in.bookmyshow.com/explore/upcoming-movies-{city}",
             f"upcoming list for {city}",
         )

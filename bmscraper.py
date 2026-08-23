@@ -94,10 +94,18 @@ def extract_json_ld(html: str, ld_type: str) -> list[dict]:
     return blocks
 
 
-def fetch_movie_list(list_url: str, label: str) -> list[dict]:
+def fetch_movie_list(city: str, list_url: str, label: str) -> list[dict]:
     """Movies from a BookMyShow explore page's schema.org ItemList — used
     for both the upcoming-movies and now-showing-movies listings, which
-    share the same JSON-LD shape."""
+    share the same JSON-LD shape.
+
+    `city` is the caller's own known request context, not parsed from the
+    item URL — BookMyShow inconsistently omits the city segment for some
+    entries (e.g. bare "/movies/{slug}/{et}" with no city prefix), which
+    previously caused a handful of movies to land with city="in.bookmyshow.com"
+    (the regex grabbing the domain instead). The city we asked for is
+    always right; only slug/et_code need parsing from the URL.
+    """
     try:
         resp = requests.get(list_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
@@ -116,7 +124,7 @@ def fetch_movie_list(list_url: str, label: str) -> list[dict]:
         movies.append(
             {
                 "name": item["name"],
-                "city": m.group(1),
+                "city": city,
                 "slug": m.group(2),
                 "et_code": m.group(3),
             }

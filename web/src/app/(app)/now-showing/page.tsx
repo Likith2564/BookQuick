@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { resolveCity } from "@/lib/cities";
@@ -32,8 +33,8 @@ export default async function NowShowingPage({
         </h1>
         <p className="text-sm text-muted">
           Playing right now, sorted by audience rating where BookMyShow has
-          one. The theatre finder (pick a cinema by format, budget, and view)
-          is coming soon — for now, jump straight to BookMyShow.
+          one. Pick a movie to find the cinema that best suits you — format,
+          budget, seat tier.
         </p>
       </div>
 
@@ -49,14 +50,12 @@ export default async function NowShowingPage({
               badge={m.rating ? `★ ${m.rating}` : undefined}
               subtitle={m.rating_label || (m.rating ? undefined : "Not yet rated")}
               actions={
-                <a
-                  href={`https://in.bookmyshow.com/${city}/movies/${m.slug}/${m.et_code}`}
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href={`/theatres/${m.et_code}?city=${city}`}
                   className="block w-full rounded-lg bg-accent py-1.5 text-center text-xs font-semibold text-accent-ink transition-opacity hover:opacity-90"
                 >
-                  View on BookMyShow
-                </a>
+                  Find a cinema
+                </Link>
               }
             />
           ))}
