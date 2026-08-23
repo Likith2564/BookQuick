@@ -7,7 +7,7 @@ import { signOut } from "@/lib/authActions";
 const LINKS = [
   { href: "/dashboard", label: "Watches" },
   { href: "/discover", label: "Discover" },
-  { href: "/now-showing", label: "Now Showing", soon: true },
+  { href: "/now-showing", label: "Now Showing" },
   { href: "/theatres", label: "Theatre Finder", soon: true },
 ];
 

@@ -1,0 +1,24 @@
+name: Fetch now-showing movies
+
+on:
+  schedule:
+    # Ratings/posters don't change minute to minute — once a day is plenty.
+    - cron: "37 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  nowshowing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - run: python nowshowing.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

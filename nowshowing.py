@@ -1,21 +1,18 @@
 """
-BookQuick discovery script.
+BookQuick now-showing script.
 
-Fetches BookMyShow's publicly-published "upcoming movies" list (the
-schema.org JSON-LD they embed for search engines — not their internal,
-bot-protected discovery API) for each tracked city, and upserts the
-results into Supabase's discovered_movies table.
+Fetches BookMyShow's currently-showing movie list per city (same
+schema.org ItemList pattern as discover.py's upcoming-movies list, just a
+different explore page) plus each movie's audience rating where
+BookMyShow has one, and upserts into Supabase's now_showing_movies table.
 
 Runs daily on its own GitHub Actions schedule (see
-.github/workflows/discover.yml) — deliberately separate from check.py's
-5-minute status-polling schedule, since this data doesn't change that
-often. The website reads this table directly; it never calls BookMyShow
-itself (Node/Vercel gets 403'd by BookMyShow's bot protection — Python
-doesn't, which is why this stays server-side here).
+.github/workflows/nowshowing.yml) — ratings/posters don't change
+minute to minute.
 """
 
 import sys
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 import bmscraper
@@ -45,29 +42,28 @@ def main() -> None:
 
     for city in CITIES:
         movies = bmscraper.fetch_movie_list(
-            f"https://in.bookmyshow.com/explore/upcoming-movies-{city}",
-            f"upcoming list for {city}",
+            f"https://in.bookmyshow.com/explore/movies-{city}",
+            f"now-showing list for {city}",
         )
-        print(f"[{city}] {len(movies)} upcoming movies")
+        print(f"[{city}] {len(movies)} now-showing movies")
 
         rows = []
         for movie in movies:
             details = bmscraper.fetch_movie_details(movie)
-            release_date = details["release_date"] or date.today().isoformat()
             rows.append(
                 {
                     "city": movie["city"],
                     "et_code": movie["et_code"],
                     "slug": movie["slug"],
                     "name": movie["name"],
-                    "release_date": release_date,
-                    "buytickets_url": bmscraper.buytickets_url(movie, release_date),
                     "poster_url": details["poster_url"],
+                    "rating": details["rating"],
+                    "rating_label": details["rating_label"],
                     "updated_at": datetime.now(timezone.utc).isoformat(),
                 }
             )
 
-        bmscraper.upsert("discovered_movies", rows, on_conflict="city,et_code")
+        bmscraper.upsert("now_showing_movies", rows, on_conflict="city,et_code")
 
 
 if __name__ == "__main__":

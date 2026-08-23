@@ -1,16 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { resolveCity } from "@/lib/cities";
+import { CityTabs } from "@/components/CityTabs";
+import { MovieTile } from "@/components/MovieTile";
 import { addFromDiscovery } from "./actions";
-
-const CITIES = [
-  { slug: "bengaluru", label: "Bengaluru" },
-  { slug: "mumbai", label: "Mumbai" },
-  { slug: "delhi-ncr", label: "Delhi-NCR" },
-  { slug: "hyderabad", label: "Hyderabad" },
-  { slug: "chennai", label: "Chennai" },
-  { slug: "pune", label: "Pune" },
-  { slug: "kolkata", label: "Kolkata" },
-];
 
 export default async function DiscoverPage({
   searchParams,
@@ -24,7 +17,7 @@ export default async function DiscoverPage({
   if (!user) redirect("/login");
 
   const { city: rawCity } = await searchParams;
-  const city = CITIES.some((c) => c.slug === rawCity) ? rawCity! : "bengaluru";
+  const city = resolveCity(rawCity);
 
   const { data: movies } = await supabase
     .from("discovered_movies")
@@ -44,58 +37,24 @@ export default async function DiscoverPage({
         </p>
       </div>
 
-      <div className="mb-8 flex flex-wrap gap-2">
-        {CITIES.map((c) => (
-          <a
-            key={c.slug}
-            href={`/discover?city=${c.slug}`}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-              c.slug === city
-                ? "bg-accent text-accent-ink"
-                : "glass-input text-muted hover:text-text"
-            }`}
-          >
-            {c.label}
-          </a>
-        ))}
-      </div>
+      <CityTabs basePath="/discover" activeCity={city} />
 
       {movies?.length ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {movies.map((m) => (
-            <div
+            <MovieTile
               key={m.id}
-              className="glass group relative overflow-hidden rounded-xl"
-            >
-              <div className="aspect-2/3 w-full bg-black/20">
-                {m.poster_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={m.poster_url}
-                    alt={m.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center font-display text-3xl text-muted">
-                    {m.name.charAt(0)}
-                  </div>
-                )}
-              </div>
-
-              <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-3 pt-8">
-                <div>
-                  <p className="line-clamp-2 text-sm leading-tight font-semibold text-white">
-                    {m.name}
-                  </p>
-                  {m.release_date && (
-                    <p className="mt-0.5 text-xs text-white/60">
-                      {new Date(m.release_date).toLocaleDateString(undefined, {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </p>
-                  )}
-                </div>
+              title={m.name}
+              posterUrl={m.poster_url}
+              subtitle={
+                m.release_date
+                  ? new Date(m.release_date).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                    })
+                  : undefined
+              }
+              actions={
                 <form action={addFromDiscovery}>
                   <input type="hidden" name="name" value={m.name} />
                   <input type="hidden" name="city" value={city} />
@@ -112,8 +71,8 @@ export default async function DiscoverPage({
                     Add alert
                   </button>
                 </form>
-              </div>
-            </div>
+              }
+            />
           ))}
         </div>
       ) : (

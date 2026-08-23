@@ -13,7 +13,6 @@ it does not loop or sleep on its own.
 
 import os
 import random
-import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -21,64 +20,17 @@ from pathlib import Path
 
 import requests
 
-# BookMyShow's booking pages render real showtimes ("07:15 PM" etc.) as
-# plain text once seats are on sale, and none at all beforehand — this is
-# a far more reliable signal than any button label, which is present
-# whether or not booking has actually opened.
-SHOWTIME_RE = re.compile(r"\b\d{1,2}:\d{2}\s?(?:AM|PM)\b")
-
-# A combined (whole-city) buytickets page embeds one JSON "venue-card" per
-# cinema; slicing between consecutive markers isolates just that cinema's
-# own showtimes/format data, so a watcher scoped to one cinema doesn't
-# fire when a *different* cinema opens first. Verified against a live
-# page: each block's extracted formats/showtimes matched that cinema
-# exactly, not neighboring ones.
-VENUE_CARD_MARKER = '"type":"venue-card"'
-VENUE_NAME_RE = re.compile(r'"venueName":"([^"]+)"')
-FORMAT_RE = re.compile(r'"format":"([^"]*)"')
+import bmscraper
 
 ROOT = Path(__file__).parent
-ENV_FILE = ROOT / ".env"
+bmscraper.load_dotenv(ROOT / ".env")
 
-REQUEST_TIMEOUT = 15
-
-
-def load_dotenv(path: Path) -> None:
-    """Minimal .env loader (no external dependency) — local dev only.
-
-    GitHub Actions injects env vars directly as job env, so this is a
-    no-op there; it only matters when running check.py on your machine.
-    Existing environment variables always win.
-    """
-    if not path.exists():
-        return
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, value = line.partition("=")
-        os.environ.setdefault(key.strip(), value.strip())
-
-
-load_dotenv(ENV_FILE)
-
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-    )
-}
-
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
-SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY = bmscraper.supabase_env()
+REQUEST_TIMEOUT = bmscraper.REQUEST_TIMEOUT
 
 
 def supabase_headers() -> dict:
-    return {
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
-        "Content-Type": "application/json",
-    }
+    return bmscraper.supabase_headers(SUPABASE_SERVICE_ROLE_KEY)
 
 
 def fetch_watchers() -> list[dict]:
@@ -126,27 +78,12 @@ def fetch_page(url: str) -> str | None:
     """Raw page text, or None on failure. Cached per-URL by the caller so
     multiple watchers on the same movie/city/date share one request."""
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        resp = requests.get(url, headers=bmscraper.HEADERS, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
     except requests.RequestException as exc:
         print(f"  ! fetch failed for {url}: {exc}", file=sys.stderr)
         return None
     return resp.text
-
-
-def venue_block(text: str, cinema_name: str) -> str | None:
-    """The slice of `text` belonging to one named cinema, or None if that
-    cinema isn't listed on the page at all (not yet announced there)."""
-    markers = [m.start() for m in re.finditer(re.escape(VENUE_CARD_MARKER), text)]
-    markers.append(len(text))
-    target = cinema_name.strip().lower()
-
-    for i in range(len(markers) - 1):
-        block = text[markers[i] : markers[i + 1]]
-        name_match = VENUE_NAME_RE.search(block)
-        if name_match and target in name_match.group(1).strip().lower():
-            return block
-    return None
 
 
 def compute_status(text: str, watcher: dict) -> str:
@@ -168,7 +105,7 @@ def compute_status(text: str, watcher: dict) -> str:
     scope = text
     cinema_name = watcher.get("cinema_name")
     if cinema_name:
-        block = venue_block(text, cinema_name)
+        block = bmscraper.venue_block(text, cinema_name)
         if block is None:
             # that specific cinema isn't listed on the page yet at all
             return "coming_soon"
@@ -176,11 +113,11 @@ def compute_status(text: str, watcher: dict) -> str:
 
     target_format = watcher.get("format")
     if target_format:
-        formats_in_scope = FORMAT_RE.findall(scope)
+        formats_in_scope = bmscraper.FORMAT_RE.findall(scope)
         if not any(target_format.strip().lower() in f.lower() for f in formats_in_scope):
             return "coming_soon"
 
-    return "available" if SHOWTIME_RE.search(scope) else "coming_soon"
+    return "available" if bmscraper.SHOWTIME_RE.search(scope) else "coming_soon"
 
 
 RESEND_API_URL = "https://api.resend.com/emails"
