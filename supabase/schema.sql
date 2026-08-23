@@ -47,6 +47,12 @@ create table public.watchers (
   status         text not null default 'coming_soon'
                    check (status in ('coming_soon', 'available', 'unknown')),
   poster_url     text,
+  -- Both optional: unset means "any cinema" / "any format" (the original
+  -- whole-city behavior). When set, check.py isolates that cinema's own
+  -- block of the buytickets page before checking for showtimes/format,
+  -- so an unrelated cinema opening first doesn't trigger a false alert.
+  cinema_name    text,
+  format         text,
   last_checked_at timestamptz,
   created_at     timestamptz not null default now()
 );

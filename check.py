@@ -27,6 +27,16 @@ import requests
 # whether or not booking has actually opened.
 SHOWTIME_RE = re.compile(r"\b\d{1,2}:\d{2}\s?(?:AM|PM)\b")
 
+# A combined (whole-city) buytickets page embeds one JSON "venue-card" per
+# cinema; slicing between consecutive markers isolates just that cinema's
+# own showtimes/format data, so a watcher scoped to one cinema doesn't
+# fire when a *different* cinema opens first. Verified against a live
+# page: each block's extracted formats/showtimes matched that cinema
+# exactly, not neighboring ones.
+VENUE_CARD_MARKER = '"type":"venue-card"'
+VENUE_NAME_RE = re.compile(r'"venueName":"([^"]+)"')
+FORMAT_RE = re.compile(r'"format":"([^"]*)"')
+
 ROOT = Path(__file__).parent
 ENV_FILE = ROOT / ".env"
 
@@ -77,7 +87,8 @@ def fetch_watchers() -> list[dict]:
         f"{SUPABASE_URL}/rest/v1/watchers",
         headers=supabase_headers(),
         params={
-            "select": "id,user_id,movie,url,mode,open_marker,closed_marker,status"
+            "select": "id,user_id,movie,url,mode,open_marker,closed_marker,"
+            "cinema_name,format,status"
         },
         timeout=REQUEST_TIMEOUT,
     )
@@ -111,33 +122,65 @@ def update_watcher_status(watcher_id: str, status: str) -> None:
     resp.raise_for_status()
 
 
-def fetch_status(watcher: dict) -> str:
-    """Returns 'available', 'coming_soon', or 'unknown' based on page text."""
+def fetch_page(url: str) -> str | None:
+    """Raw page text, or None on failure. Cached per-URL by the caller so
+    multiple watchers on the same movie/city/date share one request."""
     try:
-        resp = requests.get(watcher["url"], headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        resp = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
     except requests.RequestException as exc:
-        print(f"  ! fetch failed for {watcher['movie']}: {exc}", file=sys.stderr)
+        print(f"  ! fetch failed for {url}: {exc}", file=sys.stderr)
+        return None
+    return resp.text
+
+
+def venue_block(text: str, cinema_name: str) -> str | None:
+    """The slice of `text` belonging to one named cinema, or None if that
+    cinema isn't listed on the page at all (not yet announced there)."""
+    markers = [m.start() for m in re.finditer(re.escape(VENUE_CARD_MARKER), text)]
+    markers.append(len(text))
+    target = cinema_name.strip().lower()
+
+    for i in range(len(markers) - 1):
+        block = text[markers[i] : markers[i + 1]]
+        name_match = VENUE_NAME_RE.search(block)
+        if name_match and target in name_match.group(1).strip().lower():
+            return block
+    return None
+
+
+def compute_status(text: str, watcher: dict) -> str:
+    """Returns 'available', 'coming_soon', or 'unknown' from already-fetched
+    page text, honoring this watcher's own cinema/format scoping."""
+    if watcher.get("mode") != "showtime_regex":
+        open_marker = watcher.get("open_marker")
+        closed_marker = watcher.get("closed_marker")
+        has_open = bool(open_marker) and open_marker.lower() in text.lower()
+        has_closed = bool(closed_marker) and closed_marker.lower() in text.lower()
+        if has_open and not has_closed:
+            return "available"
+        if has_closed:
+            return "coming_soon"
+        if has_open:
+            return "available"
         return "unknown"
 
-    text = resp.text
+    scope = text
+    cinema_name = watcher.get("cinema_name")
+    if cinema_name:
+        block = venue_block(text, cinema_name)
+        if block is None:
+            # that specific cinema isn't listed on the page yet at all
+            return "coming_soon"
+        scope = block
 
-    if watcher.get("mode") == "showtime_regex":
-        return "available" if SHOWTIME_RE.search(text) else "coming_soon"
+    target_format = watcher.get("format")
+    if target_format:
+        formats_in_scope = FORMAT_RE.findall(scope)
+        if not any(target_format.strip().lower() in f.lower() for f in formats_in_scope):
+            return "coming_soon"
 
-    open_marker = watcher.get("open_marker")
-    closed_marker = watcher.get("closed_marker")
-
-    has_open_marker = bool(open_marker) and open_marker.lower() in text.lower()
-    has_closed_marker = bool(closed_marker) and closed_marker.lower() in text.lower()
-
-    if has_open_marker and not has_closed_marker:
-        return "available"
-    if has_closed_marker:
-        return "coming_soon"
-    if has_open_marker:
-        return "available"
-    return "unknown"
+    return "available" if SHOWTIME_RE.search(scope) else "coming_soon"
 
 
 RESEND_API_URL = "https://api.resend.com/emails"
@@ -182,20 +225,23 @@ def main() -> None:
 
     profiles = fetch_profiles()
 
-    # Multiple users can watch the same URL — fetch each unique URL once
-    # per run instead of once per watcher.
-    status_cache: dict[str, str] = {}
+    # Multiple watchers (different users, or the same user with different
+    # cinema/format scoping) can share a URL — fetch each unique URL once
+    # per run, then compute each watcher's own status from the cached text.
+    page_cache: dict[str, str | None] = {}
 
     for watcher in watchers:
         url = watcher["url"]
         previous = watcher.get("status", "coming_soon")
 
-        if url not in status_cache:
+        if url not in page_cache:
             # small jitter so a batch of distinct targets doesn't hammer
             # the same platform in one synchronized burst
             time.sleep(random.uniform(0.2, 1.0))
-            status_cache[url] = fetch_status(watcher)
-        status = status_cache[url]
+            page_cache[url] = fetch_page(url)
+
+        text = page_cache[url]
+        status = "unknown" if text is None else compute_status(text, watcher)
 
         print(f"[{watcher['movie']}] {previous} -> {status}")
 
@@ -206,10 +252,12 @@ def main() -> None:
         if status == "available" and previous != "available":
             to_addr = profiles.get(watcher["user_id"])
             if to_addr:
+                scope_bits = [b for b in (watcher.get("cinema_name"), watcher.get("format")) if b]
+                scope_note = f" ({' · '.join(scope_bits)})" if scope_bits else ""
                 send_email(
                     to_addr=to_addr,
-                    subject=f"Booking open: {watcher['movie']}",
-                    body=f"Tickets are now bookable for {watcher['movie']}.\n\n{url}",
+                    subject=f"Booking open: {watcher['movie']}{scope_note}",
+                    body=f"Tickets are now bookable for {watcher['movie']}{scope_note}.\n\n{url}",
                 )
                 print(f"  -> alert sent to {to_addr}")
             else:

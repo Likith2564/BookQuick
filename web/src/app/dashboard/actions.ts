@@ -16,6 +16,8 @@ export async function addWatcher(formData: FormData) {
   const mode = String(formData.get("mode") ?? "showtime_regex");
   const openMarker = String(formData.get("open_marker") ?? "").trim();
   const closedMarker = String(formData.get("closed_marker") ?? "").trim();
+  const cinemaName = String(formData.get("cinema_name") ?? "").trim();
+  const format = String(formData.get("format") ?? "").trim();
 
   if (!movie || !url) return;
 
@@ -26,6 +28,8 @@ export async function addWatcher(formData: FormData) {
     mode,
     open_marker: openMarker || null,
     closed_marker: closedMarker || null,
+    cinema_name: cinemaName || null,
+    format: format || null,
   });
 
   revalidatePath("/dashboard");

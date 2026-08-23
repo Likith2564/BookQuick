@@ -78,6 +78,37 @@ export function AddWatcherForm() {
         </div>
       </div>
 
+      {mode === "showtime_regex" && (
+        <div className="rounded-lg border border-border bg-surface-2 p-3">
+          <p className="mb-3 text-xs text-muted">
+            Leave both blank to get alerted the moment{" "}
+            <em>any</em> cinema in the URL above opens booking. Fill either
+            in to narrow it down — type the name exactly as BookMyShow
+            shows it.
+          </p>
+          <div className="mb-3">
+            <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
+              Specific cinema (optional)
+            </label>
+            <input
+              name="cinema_name"
+              placeholder="PVR: Nexus (Formerly Forum), Koramangala"
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
+              Format (optional)
+            </label>
+            <input
+              name="format"
+              placeholder="IMAX 2D, 4DX, DOLBY..."
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
+            />
+          </div>
+        </div>
+      )}
+
       {mode === "marker" && (
         <>
           <div>

@@ -25,7 +25,9 @@ export default async function DashboardPage() {
 
   const { data: watchers } = await supabase
     .from("watchers")
-    .select("id, movie, url, mode, status, poster_url, last_checked_at")
+    .select(
+      "id, movie, url, mode, status, poster_url, cinema_name, format, last_checked_at",
+    )
     .order("created_at", { ascending: false });
 
   return (
@@ -79,6 +81,11 @@ export default async function DashboardPage() {
                 <p className="truncate text-sm font-medium text-text">
                   {w.movie}
                 </p>
+                {(w.cinema_name || w.format) && (
+                  <p className="truncate text-xs text-accent">
+                    {[w.cinema_name, w.format].filter(Boolean).join(" · ")}
+                  </p>
+                )}
                 <a
                   href={w.url}
                   target="_blank"
