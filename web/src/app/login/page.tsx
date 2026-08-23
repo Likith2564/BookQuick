@@ -32,15 +32,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <h1 className="mb-2 text-2xl font-semibold">BookQuick</h1>
-      <p className="mb-8 text-sm text-neutral-500">
-        Sign in with a magic link — no password needed.
+    <main className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center px-6">
+      <h1 className="font-display text-6xl tracking-wide text-accent">
+        BOOKQUICK
+      </h1>
+      <p className="mt-2 mb-10 text-sm text-muted">
+        Know the instant booking opens. Sign in with a magic link — no
+        password needed.
       </p>
 
       {status === "sent" ? (
-        <p className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">
-          Check <strong>{email}</strong> for a sign-in link.
+        <p className="rounded-lg border border-success/30 bg-success-bg px-4 py-3 text-sm text-success">
+          Check <strong className="text-text">{email}</strong> for a sign-in
+          link.
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -50,17 +54,17 @@ export default function LoginPage() {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+            className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
           />
           <button
             type="submit"
             disabled={status === "sending"}
-            className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-ink transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {status === "sending" ? "Sending…" : "Send magic link"}
           </button>
           {status === "error" && (
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-danger">{error}</p>
           )}
         </form>
       )}

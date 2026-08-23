@@ -1,25 +1,45 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #18161a;
+  --surface: #201e23;
+  --surface-2: #29262c;
+  --border: #38343c;
+  --text: #f4f1ec;
+  --muted: #a39da8;
+  --accent: #e8b23a;
+  --accent-ink: #201704;
+  --danger: #e2685a;
+  --success: #7cc48f;
+  --success-bg: #22301f;
+  --neutral-chip: #38343c;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-neutral-chip: var(--neutral-chip);
+  --font-display: "Bebas Neue", system-ui, sans-serif;
+  --font-sans: "Work Sans", system-ui, sans-serif;
 }
 
-/* Deliberately light-only: every page is styled with light-background
-   Tailwind neutrals (text-neutral-900 etc). Following the OS dark-mode
-   preference without also dark-mode-styling every component makes text
-   unreadable (near-black text on a near-black background), so this
-   stays fixed instead of half-supporting both. */
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
 }

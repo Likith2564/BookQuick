@@ -46,6 +46,7 @@ create table public.watchers (
   closed_marker  text,
   status         text not null default 'coming_soon'
                    check (status in ('coming_soon', 'available', 'unknown')),
+  poster_url     text,
   last_checked_at timestamptz,
   created_at     timestamptz not null default now()
 );
@@ -74,6 +75,7 @@ create table public.discovered_movies (
   name           text not null,
   release_date   date,
   buytickets_url text not null,
+  poster_url     text,
   updated_at     timestamptz not null default now(),
   unique (city, et_code)
 );

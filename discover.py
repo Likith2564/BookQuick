@@ -118,20 +118,31 @@ def fetch_upcoming_movies(city: str) -> list[dict]:
     return movies
 
 
-def fetch_release_date(movie: dict) -> str | None:
+POSTER_RE = re.compile(
+    r"https://assets-in\.bmscdn\.com/iedb/movies/images/mobile/thumbnail/xlarge/[\w-]+\.jpg"
+)
+
+
+def fetch_movie_details(movie: dict) -> tuple[str | None, str | None]:
+    """(release_date, poster_url) from the movie's own page, either None on failure."""
     url = f"https://in.bookmyshow.com/{movie['city']}/movies/{movie['slug']}/{movie['et_code']}"
     try:
         resp = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
     except requests.RequestException as exc:
-        print(f"  ! failed to fetch release date for {movie['name']}: {exc}", file=sys.stderr)
-        return None
+        print(f"  ! failed to fetch details for {movie['name']}: {exc}", file=sys.stderr)
+        return None, None
 
+    release_date = None
     for block in extract_json_ld(resp.text, "Movie"):
-        published = block.get("datePublished")
-        if published:
-            return published
-    return None
+        if block.get("datePublished"):
+            release_date = block["datePublished"]
+            break
+
+    poster_match = POSTER_RE.search(resp.text)
+    poster_url = poster_match.group(0) if poster_match else None
+
+    return release_date, poster_url
 
 
 def buytickets_url(movie: dict, date_iso: str) -> str:
@@ -171,7 +182,8 @@ def main() -> None:
 
         rows = []
         for movie in movies:
-            release_date = fetch_release_date(movie) or date.today().isoformat()
+            fetched_date, poster_url = fetch_movie_details(movie)
+            release_date = fetched_date or date.today().isoformat()
             rows.append(
                 {
                     "city": movie["city"],
@@ -180,6 +192,7 @@ def main() -> None:
                     "name": movie["name"],
                     "release_date": release_date,
                     "buytickets_url": buytickets_url(movie, release_date),
+                    "poster_url": poster_url,
                     "updated_at": datetime.now(timezone.utc).isoformat(),
                 }
             )

@@ -17,69 +17,87 @@ export function AddWatcherForm() {
         formRef.current?.reset();
         setMode("showtime_regex");
       }}
-      className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4"
+      className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5"
     >
       <div>
-        <label className="mb-1 block text-xs font-medium text-neutral-600">
+        <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
           Movie
         </label>
         <input
           name="movie"
           required
           placeholder="Toxic: A Fairy Tale for Grown-ups (Bengaluru, Hindi)"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+          className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-neutral-600">
+        <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
           BookMyShow URL
         </label>
         <input
           name="url"
           required
           placeholder="https://in.bookmyshow.com/movies/.../buytickets/..."
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+          className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-neutral-600">
+        <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
           Detection mode
         </label>
-        <select
-          name="mode"
-          value={mode}
-          onChange={(e) => setMode(e.target.value as typeof mode)}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-500"
-        >
-          <option value="showtime_regex">
-            Showtime detection (recommended for BookMyShow)
-          </option>
-          <option value="marker">Text marker (other platforms)</option>
-        </select>
+        <input type="hidden" name="mode" value={mode} />
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setMode("showtime_regex")}
+            className={`rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
+              mode === "showtime_regex"
+                ? "border-accent bg-accent/10 text-text"
+                : "border-border bg-surface-2 text-muted hover:text-text"
+            }`}
+          >
+            Showtime detection
+            <span className="block text-xs opacity-70">
+              recommended · BookMyShow
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("marker")}
+            className={`rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
+              mode === "marker"
+                ? "border-accent bg-accent/10 text-text"
+                : "border-border bg-surface-2 text-muted hover:text-text"
+            }`}
+          >
+            Text marker
+            <span className="block text-xs opacity-70">other platforms</span>
+          </button>
+        </div>
       </div>
 
       {mode === "marker" && (
         <>
           <div>
-            <label className="mb-1 block text-xs font-medium text-neutral-600">
+            <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
               Open marker text
             </label>
             <input
               name="open_marker"
               placeholder="Book tickets"
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-neutral-600">
+            <label className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
               Closed marker text (optional)
             </label>
             <input
               name="closed_marker"
               placeholder="Coming Soon"
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-500"
+              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
             />
           </div>
         </>
@@ -87,7 +105,7 @@ export function AddWatcherForm() {
 
       <button
         type="submit"
-        className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white"
+        className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink transition-opacity hover:opacity-90"
       >
         Add watch
       </button>

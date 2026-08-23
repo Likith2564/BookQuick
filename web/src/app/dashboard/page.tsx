@@ -11,9 +11,9 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  coming_soon: "bg-neutral-100 text-neutral-700",
-  available: "bg-green-100 text-green-800",
-  unknown: "bg-yellow-100 text-yellow-800",
+  coming_soon: "bg-neutral-chip text-muted",
+  available: "bg-success-bg text-success",
+  unknown: "bg-danger/10 text-danger",
 };
 
 export default async function DashboardPage() {
@@ -25,55 +25,72 @@ export default async function DashboardPage() {
 
   const { data: watchers } = await supabase
     .from("watchers")
-    .select("id, movie, url, mode, status, last_checked_at")
+    .select("id, movie, url, mode, status, poster_url, last_checked_at")
     .order("created_at", { ascending: false });
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
-      <div className="mb-8 flex items-center justify-between">
+    <main className="mx-auto w-full max-w-2xl px-6 py-10">
+      <div className="mb-10 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">BookQuick</h1>
-          <p className="text-sm text-neutral-500">{user.email}</p>
+          <h1 className="font-display text-4xl tracking-wide text-accent">
+            BOOKQUICK
+          </h1>
+          <p className="text-sm text-muted">{user.email}</p>
         </div>
         <form action={signOut}>
-          <button className="text-sm text-neutral-500 underline">
+          <button className="text-sm text-muted underline hover:text-text">
             Sign out
           </button>
         </form>
       </div>
 
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-neutral-600">
+        <h2 className="text-xs font-medium tracking-wide text-muted uppercase">
           Your watches
         </h2>
         <Link
           href="/discover"
-          className="text-sm font-medium text-neutral-900 underline"
+          className="rounded-full border border-accent/40 px-3 py-1 text-sm font-medium text-accent hover:bg-accent/10"
         >
           Discover upcoming movies →
         </Link>
       </div>
-      <ul className="mb-8 flex flex-col gap-2">
+
+      <ul className="mb-10 flex flex-col gap-2">
         {watchers?.length ? (
           watchers.map((w) => (
             <li
               key={w.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 p-3"
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3"
             >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{w.movie}</p>
+              {w.poster_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={w.poster_url}
+                  alt=""
+                  className="h-16 w-11 shrink-0 rounded-md object-cover"
+                />
+              ) : (
+                <div className="flex h-16 w-11 shrink-0 items-center justify-center rounded-md bg-surface-2 font-display text-xl text-muted">
+                  {w.movie.charAt(0)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-text">
+                  {w.movie}
+                </p>
                 <a
                   href={w.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="block truncate text-xs text-neutral-400 underline"
+                  className="block truncate text-xs text-muted underline decoration-border"
                 >
                   {w.url}
                 </a>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_STYLE[w.status] ?? STATUS_STYLE.unknown}`}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap ${STATUS_STYLE[w.status] ?? STATUS_STYLE.unknown}`}
                 >
                   {STATUS_LABEL[w.status] ?? w.status}
                 </span>
@@ -81,7 +98,7 @@ export default async function DashboardPage() {
                   <input type="hidden" name="id" value={w.id} />
                   <button
                     type="submit"
-                    className="text-xs text-neutral-400 hover:text-red-600"
+                    className="text-xs text-muted hover:text-danger"
                   >
                     Remove
                   </button>
@@ -90,13 +107,17 @@ export default async function DashboardPage() {
             </li>
           ))
         ) : (
-          <li className="rounded-lg border border-dashed border-neutral-300 p-4 text-sm text-neutral-500">
-            No watches yet — add one below.
+          <li className="rounded-xl border border-dashed border-border p-4 text-sm text-muted">
+            No watches yet — add one below, or{" "}
+            <Link href="/discover" className="text-accent underline">
+              discover upcoming movies
+            </Link>
+            .
           </li>
         )}
       </ul>
 
-      <h2 className="mb-3 text-sm font-medium text-neutral-600">
+      <h2 className="mb-3 text-xs font-medium tracking-wide text-muted uppercase">
         Add a watch
       </h2>
       <AddWatcherForm />
